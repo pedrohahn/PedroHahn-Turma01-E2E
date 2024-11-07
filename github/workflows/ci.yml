@@ -1,42 +1,37 @@
-name: CI Pipeline
+name: Build and Tests
 
-# Define em que eventos o workflow será executado
 on:
   push:
-    branches:
-      - main   # Ou a branch que você deseja monitorar
+    branches: [ master ]
   pull_request:
-    branches:
-      - main   # Ou a branch que você deseja monitorar
+    branches: [ master ]
+  schedule:   
+    - cron: '0 12 * * *'
 
-# Jobs que serão executados no pipeline
 jobs:
-  test:
-    runs-on: ubuntu-latest  # Pode ser outro sistema operacional como windows-latest ou macos-latest
-
+  build:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
     steps:
-    # Passo 1: Check out o código do repositório
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    # Passo 2: Configurar Node.js (especificando a versão)
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v2
+    - name: Use Node.js 21
+      uses: actions/setup-node@v2
       with:
-        node-version: '16'  # ou a versão que você estiver usando
+        node-version: 21
+        cache: 'npm'
+    - run: npm install 
+    - run: npx playwright install      
+    - run: npm run actions
 
-    # Passo 3: Instalar as dependências
-    - name: Install dependencies
-      run: npm install
-
-    # Passo 4: Rodar os testes (no seu caso, testes Playwright)
-    - name: Run Playwright tests
-      run: npx playwright test
-
-    # Passo 5: (Opcional) Se você quiser gerar relatórios, pode adicionar mais passos
-    - name: Upload Playwright test results
-      uses: actions/upload-artifact@v3
-      with:
-        name: playwright-results
-        path: playwright-report/
-
+  sonarcloud:
+    name: Run SonarCloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
