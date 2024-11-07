@@ -1,0 +1,8 @@
+# Dependências de node_modules
+node_modules/
+
+# Arquivos de lock de pacotes
+package-lock.json
+
+# Reports
+artifacts/
