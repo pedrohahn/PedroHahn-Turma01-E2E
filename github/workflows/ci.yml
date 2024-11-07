@@ -1,0 +1,42 @@
+name: CI Pipeline
+
+# Define em que eventos o workflow será executado
+on:
+  push:
+    branches:
+      - main   # Ou a branch que você deseja monitorar
+  pull_request:
+    branches:
+      - main   # Ou a branch que você deseja monitorar
+
+# Jobs que serão executados no pipeline
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Pode ser outro sistema operacional como windows-latest ou macos-latest
+
+    steps:
+    # Passo 1: Check out o código do repositório
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Passo 2: Configurar Node.js (especificando a versão)
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # ou a versão que você estiver usando
+
+    # Passo 3: Instalar as dependências
+    - name: Install dependencies
+      run: npm install
+
+    # Passo 4: Rodar os testes (no seu caso, testes Playwright)
+    - name: Run Playwright tests
+      run: npx playwright test
+
+    # Passo 5: (Opcional) Se você quiser gerar relatórios, pode adicionar mais passos
+    - name: Upload Playwright test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-results
+        path: playwright-report/
+
